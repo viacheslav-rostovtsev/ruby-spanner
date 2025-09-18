@@ -52,6 +52,10 @@ module Google
           init
         end
 
+        # Provides a session for running an operation
+        # @yield session Session a client can use to run an operation
+        # @yieldparam [::Google::Cloud::Spanner::Session]
+        # @return [nil]
         def with_session
           session = checkout_session
           begin
