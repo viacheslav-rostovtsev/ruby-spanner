@@ -69,6 +69,7 @@ module Google
           @grpc = grpc
           @service = service
           @query_options = query_options
+          @created_time = Process.clock_gettime Process::CLOCK_MONOTONIC
         end
 
         # The unique identifier for the project.
@@ -1369,9 +1370,15 @@ module Google
           true
         end
 
-        ##
+        # Explicitly begins a new transaction and creates a server-side transaction object.
+        # Unlike {#create_empty_transaction}, this method makes an immediate
+        # `BeginTransaction` RPC call.
+        #
+        # @param exclude_txn_from_change_streams [::Boolean] Optional. Defaults to `false`.
+        #   When `exclude_txn_from_change_streams` is set to `true`, it prevents read
+        #   or write transactions from being tracked in change streams.
         # @private
-        # Creates a new transaction object every time.
+        # @return [::Google::Cloud::Spanner::Transaction]
         def create_transaction exclude_txn_from_change_streams: false
           route_to_leader = LARHeaders.begin_transaction true
           tx_grpc = service.begin_transaction path,
@@ -1380,10 +1387,15 @@ module Google
           Transaction.from_grpc tx_grpc, self, exclude_txn_from_change_streams: exclude_txn_from_change_streams
         end
 
-        ##
+        # Creates a new empty transaction wrapper without a server-side object.
+        # This is used for inline-begin transactions and does not make an RPC call.
+        # See {#create_transaction} for the RPC-based method.
+        #
+        # @param exclude_txn_from_change_streams [::Boolean] Optional. Defaults to `false`.
+        #   When `exclude_txn_from_change_streams` is set to `true`, it prevents read
+        #   or write transactions from being tracked in change streams.
         # @private
-        # Creates a new transaction object without the grpc object
-        # within it. Use it for inline-begin of a transaction.
+        # @return [::Google::Cloud::Spanner::Transaction] The new *empty* transaction object.
         def create_empty_transaction exclude_txn_from_change_streams: false
           Transaction.from_grpc nil, self, exclude_txn_from_change_streams: exclude_txn_from_change_streams
         end
@@ -1433,13 +1445,24 @@ module Google
         end
 
         # Determines if the session has been idle longer than the given
-        # duration.
+        # duration in seconds.
+        #
         # @param duration_sec [::Numeric] interval in seconds
         # @private
         # @return [::Boolean]
         def idle_since? duration_sec
           return true if @last_updated_at.nil?
           Time.now > @last_updated_at + duration_sec
+        end
+
+        # Determines if the session did exist for at least the given
+        # duration in seconds.
+        #
+        # @param duration_sec [::Numeric] interval in seconds
+        # @private
+        # @return [::Boolean]
+        def existed_since? duration_sec
+          @created_time + duration_sec > Process.clock_gettime(Process::CLOCK_MONOTONIC)
         end
 
         # Creates a new Session instance from a `V1::Session`.
