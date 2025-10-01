@@ -268,7 +268,7 @@ module Google
           end
 
           # Create a new Backup::Job from a `Gapic::Operation` object.
-          # @param grpc [::Gapic::Operation`] The wrapped `Gapic::Operation` object.
+          # @param grpc [::Gapic::Operation`] Underlying `Gapic::Operation` object.
           # @param service [::Google::Cloud::Spanner::Service] A `Spanner::Service` reference.
           # @private
           # @return [::Google::Cloud::Spanner::Backup::Job]
