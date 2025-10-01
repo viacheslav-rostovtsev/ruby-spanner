@@ -587,6 +587,28 @@ module Google
           service.rollback request, opts
         end
 
+        # Begins a new transaction. This step can often be skipped:
+        # {::Google::Cloud::Spanner::V1::Spanner::Client#read Read},
+        # {::Google::Cloud::Spanner::V1::Spanner::Client#execute_sql ExecuteSql} and
+        # {::Google::Cloud::Spanner::V1::Spanner::Client#commit Commit} can begin a new transaction as a
+        # side-effect.
+        #
+        # @param session_name [::String]
+        #   Required. The session in which the transaction to be committed is running.
+        #   Values are of the form:
+        #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
+        # @param exclude_txn_from_change_streams [::Boolean] Optional. Defaults to `false`.
+        #   When `exclude_txn_from_change_streams` is set to `true`, it prevents read
+        #   or write transactions from being tracked in change streams.
+        # @param request_options [::Hash, nil] Optional. Common request options.
+        #   Example option: `:priority`.
+        # @param call_options [::Hash, nil] Optional. A hash of values to specify the custom
+        #   call options. Example option `:timeout`.
+        # @param route_to_leader [::String, nil] Optional. The value to be sent
+        #   as `x-goog-spanner-route-to-leader` header for leader aware routing.
+        #   Expected values: `"true"` or `"false"`.
+        # @private
+        # @return [::Google::Cloud::Spanner::V1::Transaction]
         def begin_transaction session_name,
                               exclude_txn_from_change_streams: false,
                               request_options: nil,
@@ -797,6 +819,21 @@ module Google
           value << " gccl"
         end
 
+        # Creates new `Gapic::CallOptions` from typical parameters for Spanner RPC calls.
+        #
+        # @param session_name [::String, nil] Optional.
+        #   The session in which the transaction to be committed is running. The value will be
+        #   used to send the old `google-cloud-resource-prefix` routing header.
+        #   Expected values are of the form:
+        #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
+        #   If nil is specified nothing will be sent.
+        # @param call_options [::Hash, nil] Optional. A hash of values to specify the custom
+        #   call options. Example option `:timeout`.
+        # @param route_to_leader [::String, nil] Optional. The value to be sent
+        #   as `x-goog-spanner-route-to-leader` header for leader aware routing.
+        #   Expected values: `"true"` or `"false"`. If nil is specified nothing will be sent.
+        # @private
+        # @return [::Gapic::CallOptions]
         def default_options session_name: nil, call_options: nil, route_to_leader: nil
           opts = {}
           metadata = {}
