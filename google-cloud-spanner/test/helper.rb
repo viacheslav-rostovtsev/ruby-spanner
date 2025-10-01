@@ -40,18 +40,28 @@ class MockSpanner < Minitest::Spec
     addl.include? :mock_spanner
   end
 
+  # Shutdown client is complicated if the default non-multiplex pool is used
+  # since we don't want to do a slow-shutdown for that every time.
+  # If a MultiplexSessionCache is used the cleanup is simplified
+  # @param client [::Google::Cloud::Spanner::Client]
   def shutdown_client! client
     # extract the pool
+    # @type [::Google::Cloud::Spanner::Pool, ::Google::Cloud::Spanner::MultiplexSessionCache]
     pool = client.instance_variable_get :@pool
-    # remove all sessions so we don't have to handle the calls to session_delete
-    pool.sessions_available = []
-    pool.sessions_in_use = {}
 
-    # close the client
-    client.close
+    if (pool.is_a? ::Google::Cloud::Spanner::MultiplexSessionCache)
+       client.close
+    else
+      # remove all sessions so we don't have to handle the calls to session_delete
+      pool.sessions_available = []
+      pool.sessions_in_use = {}
 
-    # close the client
-    shutdown_pool! pool
+      # close the client
+      client.close
+
+      # close the client
+      shutdown_pool! pool
+    end
   end
 
   def shutdown_pool! pool
