@@ -17,6 +17,7 @@ require "google/cloud/spanner/errors"
 require "google/cloud/spanner/project"
 require "google/cloud/spanner/data"
 require "google/cloud/spanner/pool"
+require "google/cloud/spanner/multiplex_session_cache"
 require "google/cloud/spanner/session"
 require "google/cloud/spanner/transaction"
 require "google/cloud/spanner/snapshot"
@@ -61,7 +62,10 @@ module Google
         # @param database_id [::String] Database id, e.g. `"my-database"`.
         # @param session_labels [::Hash, nil] Optional. The labels to be applied to all sessions
         #   created by the client. Example: `"team" => "billing-service"`.
-        # @param pool_opts [::Hash] Optional. `Spanner::Pool` creation options.
+        # @param pool_opts [::Hash] Optional. Defaults to `{}`. Deprecated.
+        #   This parameter will become non-functional and will be removed in the subsequent versions.
+        #   If `{}` or `nil` a MultiplexSessionCache will be created and used.
+        #   Otherwise the legacy `Spanner::Pool` will be created with options provided.
         #   Example parameter: `:keepalive`.
         # @param query_options [::Hash, nil] Optional. A hash of values to specify the custom
         #   query options for executing SQL query. Example parameter `:optimizer_version`.
@@ -80,7 +84,11 @@ module Google
           @database_role = database_role
           @session_labels = session_labels
           @directed_read_options = directed_read_options
-          @pool = Pool.new self, **pool_opts
+          @pool = if pool_opts.nil? || pool_opts.empty?
+                    MultiplexSessionCache.new self
+                  else
+                    Pool.new self, **pool_opts
+                  end
           @query_options = query_options
         end
 
