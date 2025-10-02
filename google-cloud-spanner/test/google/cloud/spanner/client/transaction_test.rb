@@ -99,7 +99,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     )
   }
   let(:update_results_enum) { Array(update_results_grpc).to_enum }
-  let(:client) { spanner.client instance_id, database_id, pool: { min: 0 } }
+  let(:client) { spanner.client instance_id, database_id }
   let(:tx_opts) { Google::Cloud::Spanner::V1::TransactionOptions.new(read_write: Google::Cloud::Spanner::V1::TransactionOptions::ReadWrite.new) }
   let(:commit_time) { Time.now }
   let(:commit_timestamp) { Google::Cloud::Spanner::Convert.time_to_timestamp commit_time }
@@ -155,7 +155,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
   it "can execute a simple query" do
     mock = Minitest::Mock.new
     spanner.service.mocked_service = mock
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector, seqno: 1, options: default_options
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: [], transaction_id: transaction_id,
@@ -187,7 +187,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -216,7 +216,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -244,7 +244,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -272,7 +272,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -300,7 +300,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -331,7 +331,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -360,7 +360,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -391,7 +391,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -418,7 +418,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -445,7 +445,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options_excluding_from_change_streams, request_options: nil
@@ -500,7 +500,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     ]
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
       single_use_transaction: tx_no_dml_options, request_options: nil
@@ -534,7 +534,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
 
     mock = Minitest::Mock.new
     spanner.service.mocked_service = mock
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector, seqno: 1, options: default_options
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: [], transaction_id: transaction_id,
@@ -562,7 +562,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
 
     it "commits multiple mutations" do
       mock = Minitest::Mock.new
-      mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+      mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
       mock.expect :commit, commit_resp, [{
         session: session_grpc.name, mutations: mutations, transaction_id: nil,
         single_use_transaction: tx_no_dml_options, request_options: request_options
@@ -586,7 +586,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     it "execute query" do
       mock = Minitest::Mock.new
       spanner.service.mocked_service = mock
-      mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+      mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
       expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector, seqno: 1, request_options: request_options, options: default_options
       mock.expect :commit, commit_resp, [{
         session: session_grpc.name, mutations: [], transaction_id: transaction_id,
@@ -616,7 +616,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
 
     mock = Minitest::Mock.new
     spanner.service.mocked_service = mock
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
 
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users",
                                  transaction: tx_selector, seqno: 1,

@@ -60,13 +60,13 @@ describe Google::Cloud::Spanner::Client, :snapshot, :mock_spanner do
   end
   let(:results_grpc) { Google::Cloud::Spanner::V1::PartialResultSet.new results_hash }
   let(:results_enum) { Array(results_grpc).to_enum }
-  let(:client) { spanner.client instance_id, database_id, pool: { min: 0 } }
+  let(:client) { spanner.client instance_id, database_id }
   let(:snp_opts) { Google::Cloud::Spanner::V1::TransactionOptions::ReadOnly.new return_read_timestamp: true }
   let(:tx_opts) { Google::Cloud::Spanner::V1::TransactionOptions.new read_only: snp_opts }
 
   def mock_builder
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: tx_opts }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector, options: default_options
@@ -272,7 +272,7 @@ describe Google::Cloud::Spanner::Client, :snapshot, :mock_spanner do
     call_options = { timeout: timeout, retry_policy: retry_policy }
 
     mock = Minitest::Mock.new
-    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
     mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: tx_opts }, expect_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector, options: default_options
