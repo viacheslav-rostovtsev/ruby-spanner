@@ -71,7 +71,9 @@ module Google
           ##
           # @private Creates a new Backup::Job instance.
           def initialize
+            # @type [::Gapic::Operation, nil]
             @grpc = nil
+            # @type [::Google::Cloud::Spanner::Service, nil]
             @service = nil
           end
 

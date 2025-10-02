@@ -509,8 +509,15 @@ module Google
         #   Required.
         # @param [String] database_id The unique identifier for the database.
         #   Required.
-        # @param [Hash] pool Settings to control how and when sessions are
-        #   managed by the client. The following settings can be provided:
+        # @param [Hash] pool Optional. Defaults to `{}`. Deprecated.
+        #   This parameter will become non-functional and will be removed in the
+        #   future releases.
+        #
+        #   Settings to control how and when sessions are managed by the client.
+        #   If this parameter is `{}` or `nil` the client will use Multiplexed sessions.
+        #   Otherwise the legacy session pool will be created with options provided and
+        #   the client will use non-Multiplexed sessions.
+        #   The following settings can be provided:
         #
         #   * `:min` (Integer) Minimum number of sessions that the client will
         #     maintain at any point in time. The default is 10.
@@ -583,6 +590,14 @@ module Google
         #       puts "User #{row[:id]} is #{row[:name]}"
         #     end
         #   end
+        #
+        # @example
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   # Creates a client with a legacy pool of 5 to 10 non-multiplexed sessions.
+        #   db = spanner.client "my-instance", "my-database", pool: { min: 5, max: 10 }
         #
         def client instance_id, database_id, pool: {}, labels: nil,
                    query_options: nil, database_role: nil, directed_read_options: nil
