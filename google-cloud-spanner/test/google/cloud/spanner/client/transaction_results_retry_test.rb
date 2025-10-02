@@ -39,7 +39,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
 
   let(:tx_selector_with_id) { Google::Cloud::Spanner::V1::TransactionSelector.new id: tx_id }
   
-  let(:client) { spanner.client instance_id, database_id, pool: { min: 0 } }
+  let(:client) { spanner.client instance_id, database_id }
 
   describe :read do
     let :results_hash1_tx do
@@ -286,7 +286,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       ].to_enum
 
       service_mock = Minitest::Mock.new
-      service_mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+      service_mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
 
       execute_streaming_sql_request_1 = [{
         session: session_grpc.name,

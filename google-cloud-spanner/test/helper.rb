@@ -33,7 +33,7 @@ class MockSpanner < Minitest::Spec
       Google::Cloud::Spanner::Service.new(project, credentials, enable_leader_aware_routing: false)
     )
   end
-  let(:default_session_request) {nil}
+  let(:default_session_request) {Google::Cloud::Spanner::V1::Session.new name: "", labels: {}, creator_role: "", multiplexed: true}
 
   # Register this spec type for when :spanner is used.
   register_spec_type(self) do |desc, *addl|
