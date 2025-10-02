@@ -1401,25 +1401,6 @@ module Google
         end
 
         ##
-        # Reloads the session resource. Useful for determining if the session is
-        # still valid on the Spanner API.
-        def reload!
-          ensure_service!
-          @grpc = service.get_session path
-          @last_updated_at = Time.now
-          self
-        rescue Google::Cloud::NotFoundError
-          labels = @grpc.labels.to_h unless @grpc.labels.to_h.empty?
-          @grpc = service.create_session \
-            V1::Spanner::Paths.database_path(
-              project: project_id, instance: instance_id, database: database_id
-            ),
-            labels: labels
-          @last_updated_at = Time.now
-          self
-        end
-
-        ##
         # @private
         # Keeps the session alive by executing `"SELECT 1"`.
         def keepalive!
