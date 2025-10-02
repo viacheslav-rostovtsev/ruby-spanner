@@ -1400,10 +1400,16 @@ module Google
           Transaction.from_grpc nil, self, exclude_txn_from_change_streams: exclude_txn_from_change_streams
         end
 
-        ##
+        # If the session is non-multiplexed, keeps the session alive by executing `"SELECT 1"`.
+        # This method will re-create the session if necessary.
+        # For multiplexed session the keepalive is not required and this method immediately returns `true`.
         # @private
-        # Keeps the session alive by executing `"SELECT 1"`.
+        # @return [::Boolean]
+        #   `true` if the session is multiplexed or if the keepalive was successful for non-multiplexed session,
+        #   `false` if the non-multiplexed session was not found and the had to be recreated.
         def keepalive!
+          return true if multiplexed?
+
           ensure_service!
           route_to_leader = LARHeaders.execute_query false
           execute_query "SELECT 1", route_to_leader: route_to_leader
@@ -1464,6 +1470,13 @@ module Google
         end
 
         protected
+
+        # Whether this session is multiplexed.
+        # @private
+        # @return [::Boolean]
+        def multiplexed?
+          @grpc.multiplexed
+        end
 
         ##
         # @private Raise an error unless an active connection to the service is
