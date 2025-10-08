@@ -2270,7 +2270,7 @@ module Google
                             staleness: staleness || exact_staleness,
                             call_options: call_options
             Thread.current[IS_TRANSACTION_RUNNING_KEY] = true
-            snp = Snapshot.from_grpc snp_grpc, session, @directed_read_options
+            snp = Snapshot.from_grpc snp_grpc, session, directed_read_options: @directed_read_options
             yield snp if block_given?
           ensure
             Thread.current[IS_TRANSACTION_RUNNING_KEY] = nil
@@ -2524,23 +2524,53 @@ module Google
           raise "Must have active connection to service" unless @project.service
         end
 
-        ##
-        # Check for valid snapshot arguments
+       
+        # Checks that the options hash contains exactly one valid single-use key.
+        #
+        # @param opts [::Hash, nil] The options hash to validate.
+        # @private
+        # @raise [ArgumentError] If the hash does not contain exactly one valid
+        #   single-use key.
+        # @return [void]
         def validate_single_use_args! opts
-          return true if opts.nil? || opts.empty?
-          valid_keys = %i[strong timestamp read_timestamp staleness
-                          exact_staleness bounded_timestamp
-                          min_read_timestamp bounded_staleness max_staleness]
-          if opts.keys.count == 1 && valid_keys.include?(opts.keys.first)
-            return true
-          end
-          raise ArgumentError,
-                "Must provide only one of the following single_use values: " \
-                "#{valid_keys}"
-        end
+          # An empty options hash is valid.
+          return if opts.nil? || opts.empty?
 
-        ##
-        # Create a single-use TransactionSelector
+          keys = opts.keys
+
+          valid_keys = Set.new(%i[
+            strong timestamp read_timestamp staleness exact_staleness
+            bounded_timestamp min_read_timestamp bounded_staleness max_staleness
+          ]).freeze
+
+          # Raise an error unless there is exactly one key and it's in the valid set.
+          unless keys.length == 1 && valid_keys.include?(keys.first)
+            raise ArgumentError,
+                  "Options must contain exactly one of the following keys: " \
+                  "#{valid_keys.to_a.join(', ')}"
+          end
+        end
+        
+        # Creates a selector for a single-use, read-only transaction.
+        #
+        # @param opts [::Hash] Options for creating the transaction selector.
+        #   If those are `nil` or empty, a `nil` will be returned instead of a `V1::TransactionSelector`.
+        # @option opts [::Boolean] :strong
+        #   Executes a strong read.
+        # @option opts [::Time, ::DateTime] :read_timestamp
+        #   Executes a read at the provided time. Alias: `:timestamp`.
+        # @option opts [::Numeric] :exact_staleness
+        #   Executes a read at a time that is exactly this stale (in seconds).
+        #   Alias: `:staleness`.
+        # @option opts [::Time, ::DateTime] :min_read_timestamp
+        #   Executes a read at a time that is at least this timestamp.
+        #   Alias: `:bounded_timestamp`.
+        # @option opts [::Numeric] :max_staleness
+        #   Executes a read at a time that is at most this stale (in seconds).
+        #   Alias: `:bounded_staleness`.
+        # @private
+        # @return [V1::TransactionSelector, nil] The transaction selector object, or
+        #   `nil` if the `opts` hash is nil or empty.
         def single_use_transaction opts
           return nil if opts.nil? || opts.empty?
 
