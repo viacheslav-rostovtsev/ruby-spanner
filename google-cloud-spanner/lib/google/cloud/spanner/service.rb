@@ -657,6 +657,28 @@ module Google
           service.batch_write request, opts
         end
 
+        # Creates a specialized `V1::Transaction` object. Reads on that object will have
+        # at most one of following consistency properties:
+        # * reading all previously commited transactions
+        # * reading all data from a given timestamp
+        # * reading all data from a timestamp that is exactly a given value old
+        # (the last one sidesteps worries of client-server time skew).
+        #
+        # Having at _least_ one of those is not enforced so this can create normal transactions
+        # as well.
+        # Created transactions will include the  the read timestamp chosen for the transaction.
+        # @param session_name [::String] Required. 
+        #   The session in which the transaction to be committed is running.
+        #   Values are of the form:
+        #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
+        # @param strong [::Boolean, nil] Optional.
+        #   Whether this transaction should have strong consistency.
+        # @param timestamp [::String, ::Date ::Time, nil] Optional.
+        #   Timestamp that the reads should be executed at. Reads are repeatable with this option.
+        # @param staleness [::Numeric, nil] Optional.
+        #   The offset of staleness that the reads should be executed at.
+        # @param call_options [::Hash, nil] Optional. A hash of values to specify the custom
+        #   call options. Example option `:timeout`.
         def create_snapshot session_name, strong: nil, timestamp: nil,
                             staleness: nil, call_options: nil
           tx_opts = V1::TransactionOptions.new(
