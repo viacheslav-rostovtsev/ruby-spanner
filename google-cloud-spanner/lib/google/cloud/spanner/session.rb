@@ -44,8 +44,8 @@ module Google
       #
       class Session
         # The wrapped `V1::Session` protobuf session object.
-        # @return [::Google::Cloud::Spanner::V1::Session]
         # @private
+        # @return [::Google::Cloud::Spanner::V1::Session]
         attr_accessor :grpc
 
         # The `Spanner::Service` object.
