@@ -40,10 +40,30 @@ module Google
       #     puts "Column #{name} is type #{type}"
       #   end
       #
+      #   results.rows.each do |row|
+      #     puts "User #{row[:id]} is #{row[:name]}"
+      #   end
+      #
       class Results
-        ##
-        # @private Object of type
-        # Google::Cloud::Spanner::V1::ResultSetMetadata
+        # Creates a new Results instance.
+        # @param metadata [::Google::Cloud::Spanner::V1::ResultSetMetadata] ParialResultSet metadata object
+        # @param stats [::Google::Cloud::Spanner::V1::ResultSetStats] Query plan and execution statistics
+        #   for the statement that produced this streaming result set.
+        # @param partial_result_sets [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
+        # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
+        # @private
+        def initialize metadata, stats, partial_result_sets, service
+          @metadata = metadata
+          @stats = stats
+          @partial_result_sets = partial_result_sets
+          @service = service
+        end
+
+        
+        # The `V1::ResultSetMetadata` protobuf object from the first
+        # PartialResultSet.
+        # @private
+        # @return [::Google::Cloud::Spanner::V1::ResultSetMetadata]
         attr_reader :metadata
 
         ##
@@ -51,8 +71,8 @@ module Google
         # transactions).
         # @return [Time] The chosen timestamp.
         def timestamp
-          return nil if @metadata.nil? || @metadata.transaction.nil?
-          Convert.timestamp_to_time @metadata.transaction.read_timestamp
+          return nil if transaction.nil?
+          Convert.timestamp_to_time transaction.read_timestamp
         end
 
         ##
@@ -78,11 +98,11 @@ module Google
           @fields ||= Fields.from_grpc @metadata.row_type.fields
         end
 
-        ##
+        # Returns a transaction from the first ResultSet's metadata if available
         # @private
-        # Returns a transaction if available
+        # @return [::Google::Cloud::Spanner::V1::Transaction, nil]
         def transaction
-          @metadata&.transaction
+         @metadata&.transaction
         end
 
         # rubocop:disable all
@@ -128,16 +148,16 @@ module Google
           loop do
             begin
               if should_resume_request
-                @enum = resume_request(resume_token)
+                @partial_result_sets = resume_request(resume_token)
                 buffered_responses = []
                 should_resume_request = false
               elsif should_retry_request
-                @enum = retry_request()
+                @partial_result_sets = retry_request()
                 buffered_responses = []
                 should_retry_request = false
               end
 
-              grpc = @enum.next
+              grpc = @partial_result_sets.next
               # metadata should be set before the first iteration...
               @metadata ||= grpc.metadata
               @stats ||= grpc.stats
@@ -295,31 +315,59 @@ module Google
           @stats.row_count == :row_count_exact
         end
 
+        # Creates a `Spanner::Results` for a given `PartialResultSet` grpc stream.
+        # @param enum [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
+        #   Raw enumerable from underlying grpc call.
+        # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
         # @private
-        def self.from_enum enum, service
-          grpc = enum.peek
-          new.tap do |results|
-            results.instance_variable_set :@metadata, grpc.metadata
-            results.instance_variable_set :@stats,    grpc.stats
-            results.instance_variable_set :@enum,     enum
-            results.instance_variable_set :@service,  service
-          end
+        # @return [::Google::Cloud::Spanner::Results]
+        def self.from_partial_result_sets partial_result_sets, service
+          # @type [::Google::Cloud::Spanner::V1::PartialResultSet]
+          grpc = partial_result_sets.peek
+          metadata = grpc.metadata
+          stats = grpc.stats
+
+          new metadata, stats, partial_result_sets, service
         rescue GRPC::BadStatus => e
           raise Google::Cloud::Error.from_error(e)
         end
 
+        # Creates a `Spanner::Results` wrapper from ExecuteStreamingSql call results and params.
+        # @param response [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
+        #   Raw enumerable from grpc `ExecuteStreamingSql` call.
+        # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
+        # @param session_path [::String] Full name of the session.
+        # @param sql [::String] The SQL query string that was executed.
+        # @param execute_query_options [::Hash] Full request options
+        #   that were sent to the `service.execute_streaming_sql`. This hash joins params needed to
+        #   construct `::Gapic::CallOptions`, e.g. `call_options` and header-related `route_to_leader`
+        #   with params specific to `execute_streaming_sql`, such as `seqno`.
         # @private
+        # @return [::Google::Cloud::Spanner::Results]
         def self.from_execute_query_response response, service, session_path, sql, execute_query_options
-          from_enum(response, service).tap do |results|
+          from_partial_result_sets(response, service).tap do |results|
             results.instance_variable_set :@session_path, session_path
             results.instance_variable_set :@sql, sql
             results.instance_variable_set :@execute_query_options, execute_query_options
           end
         end
 
+        # Creates a `Spanner::Results` wrapper from StreamingRead call results and params.
+        # @param response [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
+        #   Raw enumerable from grpc `StreamingRead` call.
+        # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
+        # @param session_path [::String] Full name of the session.
+        # @param table [::String] The name of the table in the database that was read by `StreamingRead` request.
+        # @param columns [::Array<String, Symbol>] The columns of table that were returned
+        #   by the `StreamingRead` request.
+        # @param read_options [::Hash] Full request options
+        #   that were sent to the `service.streaming_read_table`. This hash joins params needed to
+        #   construct `::Gapic::CallOptions`, e.g. `call_options` and header-related `route_to_leader`
+        #   with params specific to `streaming_read_table`, such as `keys`.
         # @private
+        # @return [::Google::Cloud::Spanner::Results]
         def self.from_read_response response, service, session_path, table, columns, read_options
-          from_enum(response, service).tap do |results|
+          from_partial_result_sets(response, service).tap do |results|
             results.instance_variable_set :@session_path, session_path
             results.instance_variable_set :@table, table
             results.instance_variable_set :@columns, columns
