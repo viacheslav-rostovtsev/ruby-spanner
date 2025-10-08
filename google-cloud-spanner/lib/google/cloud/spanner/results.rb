@@ -45,12 +45,6 @@ module Google
       #   end
       #
       class Results
-        # The `V1::ResultSetMetadata` protobuf object from the first
-        # PartialResultSet.
-        # @private
-        # @return [::Google::Cloud::Spanner::V1::ResultSetMetadata]
-        attr_reader :metadata
-
         # Creates a new Results instance.
         # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
         # @param partial_result_sets [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
@@ -69,7 +63,15 @@ module Google
           @session_name = session_name
           @metadata = metadata
           @stats = stats
+          @partial_result_sets = partial_result_sets
         end
+
+        
+        # The `V1::ResultSetMetadata` protobuf object from the first
+        # PartialResultSet.
+        # @private
+        # @return [::Google::Cloud::Spanner::V1::ResultSetMetadata]
+        attr_reader :metadata
 
         ##
         # The read timestamp chosen for single-use snapshots (read-only
