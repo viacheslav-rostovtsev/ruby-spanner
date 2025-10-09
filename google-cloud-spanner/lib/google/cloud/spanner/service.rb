@@ -352,17 +352,17 @@ module Google
         # @param database_name [::String] The full name of the database.
         # @param labels [::Hash, nil] Optional. The labels to be applied to all sessions
         #   created by the client. Example: `"team" => "billing-service"`.
-        # @param call_options [::Hash, nil] Optional. A hash of values to specify the custom
-        #   call options. Example option `:timeout`.
         # @param database_role [::String, nil] Optional. The Spanner session creator role.
         #   Example: `analyst`.
         # @param multiplexed [::Boolean] Optional. Default to `false`.
         #   If `true`, specifies a multiplexed session.
+        # @param call_options [::Hash, nil] Optional. A hash of values to specify the custom
+        #   call options. Example option `:timeout`.
         # @return [::Google::Cloud::Spanner::V1::Session]
         # @private
         def create_session database_name, labels: nil,
-                           call_options: nil, database_role: nil,
-                           multiplexed: false
+                           database_role: nil, multiplexed: false,
+                           call_options: nil
           route_to_leader = LARHeaders.create_session
           opts = default_options(
             session_name: database_name,
