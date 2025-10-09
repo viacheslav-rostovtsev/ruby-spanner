@@ -510,7 +510,7 @@ module Google
         # @param [String] database_id The unique identifier for the database.
         #   Required.
         # @param [Hash] pool Optional. Defaults to `{}`. Deprecated.
-        #   This parameter will become non-functional and will be removed in the
+        #   @deprecated This parameter will become non-functional and will be removed in the
         #   future releases.
         #
         #   Settings to control how and when sessions are managed by the client.
@@ -574,7 +574,7 @@ module Google
         #      Spanner will wait for a replica in the list to become available,
         #      requests may fail due to DEADLINE_EXCEEDED errors.
         #
-        # @return [Client] The newly created client.
+        # @return [::Google::Cloud::Spanner::Client] The newly created client.
         #
         # @example
         #   require "google/cloud/spanner"
@@ -664,7 +664,7 @@ module Google
         #      Spanner will wait for a replica in the list to become available,
         #      requests may fail due to DEADLINE_EXCEEDED errors.
         #
-        # @return [Client] The newly created client.
+        # @return [::Google::Cloud::Spanner::BatchClient] The newly created client.
         #
         # @example
         #   require "google/cloud/spanner"

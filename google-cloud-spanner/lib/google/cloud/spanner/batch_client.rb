@@ -83,6 +83,16 @@ module Google
           @session_labels = session_labels
           @query_options = query_options
           @directed_read_options = directed_read_options
+
+          session_creation_options = SessionCreationOptions.new(
+            database_path:  Admin::Database::V1::DatabaseAdmin::Paths.database_path(
+              project: @project.service.project, instance: instance_id, database: database_id
+            ),
+            session_labels: @session_labels,
+            query_options: @query_options
+          )
+
+          @session_cache = SessionCache.new @project.service, session_creation_options
         end
 
         # The unique identifier for the project.
@@ -110,13 +120,15 @@ module Google
         end
 
         # The Spanner instance connected to.
-        # @return [Instance]
+        # @deprecated Use {Google::Cloud::Spanner::Admin::Instance#instance_admin} instead.
+        # @return [::Google::Cloud::Spanner::Instance]
         def instance
           @project.instance instance_id
         end
 
         # The Spanner database connected to.
-        # @return [Database]
+        # @deprecated Use {Google::Cloud::Spanner::Admin::Database#database_admin} instead.
+        # @return [::Google::Cloud::Spanner::Database]
         def database
           @project.database instance_id, database_id
         end
@@ -428,12 +440,7 @@ module Google
         # @return [::Google::Cloud::Spanner::Session]
         def session
           ensure_service!
-          grpc = @project.service.create_session \
-            V1::Spanner::Paths.database_path(
-              project: project_id, instance: instance_id, database: database_id
-            ),
-            labels: @session_labels
-          Session.from_grpc grpc, @project.service, query_options: @query_options
+          @session_cache.session
         end
 
         ##

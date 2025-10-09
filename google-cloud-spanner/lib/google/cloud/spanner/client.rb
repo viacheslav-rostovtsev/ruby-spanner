@@ -17,7 +17,8 @@ require "google/cloud/spanner/errors"
 require "google/cloud/spanner/project"
 require "google/cloud/spanner/data"
 require "google/cloud/spanner/pool"
-require "google/cloud/spanner/multiplex_session_cache"
+require "google/cloud/spanner/session_cache"
+require "google/cloud/spanner/session_creation_options"
 require "google/cloud/spanner/session"
 require "google/cloud/spanner/transaction"
 require "google/cloud/spanner/snapshot"
@@ -64,7 +65,7 @@ module Google
         #   created by the client. Example: `"team" => "billing-service"`.
         # @param pool_opts [::Hash] Optional. Defaults to `{}`. Deprecated.
         #   This parameter will become non-functional and will be removed in the subsequent versions.
-        #   If `{}` or `nil` a MultiplexSessionCache will be created and used.
+        #   If `{}` or `nil` a SessionCache will be created and used.
         #   Otherwise the legacy `Spanner::Pool` will be created with options provided.
         #   Example parameter: `:keepalive`.
         # @param query_options [::Hash, nil] Optional. A hash of values to specify the custom
@@ -83,13 +84,23 @@ module Google
           @database_id = database_id
           @database_role = database_role
           @session_labels = session_labels
-          @directed_read_options = directed_read_options
-          @pool = if pool_opts.nil? || pool_opts.empty?
-                    MultiplexSessionCache.new self
-                  else
-                    Pool.new self, **pool_opts
-                  end
           @query_options = query_options
+          @directed_read_options = directed_read_options
+
+          session_creation_options = SessionCreationOptions.new(
+            database_path:  Admin::Database::V1::DatabaseAdmin::Paths.database_path(
+              project: @project.service.project, instance: instance_id, database: database_id
+            ),
+            session_labels: @session_labels,
+            session_creator_role: @database_role,
+            query_options: @query_options
+          )
+
+          @pool = if pool_opts.nil? || pool_opts.empty?
+                    SessionCache.new @project.service, session_creation_options
+                  else
+                    Pool.new @project.service, session_creation_options, **pool_opts
+                  end
         end
 
         # The unique identifier for the project.
@@ -2441,56 +2452,6 @@ module Google
         #
         def reset
           @pool.reset
-        end
-
-        # Creates a new Session objece.
-        # @param multiplexed [::Boolean] Optional. Default to `false`.
-        #   If `true`, specifies a multiplexed session.
-        # @private
-        # @return [::Google::Cloud::Spanner::Session]
-        def create_new_session multiplexed: false
-          ensure_service!
-          grpc = @project.service.create_session \
-            Admin::Database::V1::DatabaseAdmin::Paths.database_path(
-              project: project_id, instance: instance_id, database: database_id
-            ),
-            labels: @session_labels,
-            database_role: @database_role,
-            multiplexed: multiplexed
-
-          Session.from_grpc grpc, @project.service, query_options: @query_options
-        end
-
-        ##
-        # @private
-        # Creates a batch of new session objects of size `total`.
-        # Makes multiple RPCs if necessary. Returns empty array if total is 0.
-        def batch_create_new_sessions total
-          sessions = []
-          remaining = total
-          while remaining.positive?
-            sessions += batch_create_sessions remaining
-            remaining = total - sessions.count
-          end
-          sessions
-        end
-
-        ##
-        # @private
-        # The response may have fewer sessions than requested in the RPC.
-        #
-        def batch_create_sessions session_count
-          ensure_service!
-          resp = @project.service.batch_create_sessions \
-            Admin::Database::V1::DatabaseAdmin::Paths.database_path(
-              project: project_id, instance: instance_id, database: database_id
-            ),
-            session_count,
-            labels: @session_labels,
-            database_role: @database_role
-          resp.session.map do |grpc|
-            Session.from_grpc grpc, @project.service, query_options: @query_options
-          end
         end
 
         # @private

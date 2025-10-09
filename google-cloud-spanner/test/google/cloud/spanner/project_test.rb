@@ -47,7 +47,7 @@ describe Google::Cloud::Spanner::Project, :mock_spanner do
     spanner.service.mocked_service = mock
 
     client = spanner.client instance_id, database_id
-    _(client.instance_variable_get :@pool).must_be_kind_of ::Google::Cloud::Spanner::MultiplexSessionCache
+    _(client.instance_variable_get :@pool).must_be_kind_of ::Google::Cloud::Spanner::SessionCache
   end
 
    it "creates client with legacy pool if pool options given" do
