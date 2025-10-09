@@ -66,7 +66,7 @@ module Google
           @partial_result_sets = partial_result_sets
         end
 
-        
+
         # The `V1::ResultSetMetadata` protobuf object from the first
         # PartialResultSet.
         # @private

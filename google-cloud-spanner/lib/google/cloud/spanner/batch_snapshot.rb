@@ -72,7 +72,7 @@ module Google
         # @param grpc [::Google::Cloud::Spanner::V1::Transaction]
         #   Underlying `V1::Transaction` object.
         # @param session [::Google::Cloud::Spanner::Session] A `Spanner::Session` reference.
-        # @param directed_read_options [::Hash, nil] Optional. Client options used to set 
+        # @param directed_read_options [::Hash, nil] Optional. Client options used to set
         #   the `directed_read_options` for all ReadRequests and ExecuteSqlRequests.
         #   Converts to `V1::DirectedReadOptions`. Example option: `:exclude_replicas`.
         # @private
@@ -864,7 +864,7 @@ module Google
         # @param grpc [::Google::Cloud::Spanner::V1::Transaction]
         #   Underlying `V1::Transaction` object.
         # @param session [::Google::Cloud::Spanner::Session] A `Spanner::Session` reference.
-        # @param directed_read_options [::Hash, nil] Optional. Client options used to set 
+        # @param directed_read_options [::Hash, nil] Optional. Client options used to set
         #   the `directed_read_options` for all ReadRequests and ExecuteSqlRequests.
         #   Converts to `V1::DirectedReadOptions`. Example option: `:exclude_replicas`.
         # @private

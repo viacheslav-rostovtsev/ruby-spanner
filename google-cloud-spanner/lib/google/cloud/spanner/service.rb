@@ -667,7 +667,7 @@ module Google
         # Having at _least_ one of those is not enforced so this can create normal transactions
         # as well.
         # Created transactions will include the  the read timestamp chosen for the transaction.
-        # @param session_name [::String] Required. 
+        # @param session_name [::String] Required.
         #   The session in which the transaction to be committed is running.
         #   Values are of the form:
         #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
