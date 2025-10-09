@@ -2513,7 +2513,6 @@ module Google
           raise "Must have active connection to service" unless @project.service
         end
 
-       
         # Checks that the options hash contains exactly one valid single-use key.
         #
         # @param opts [::Hash, nil] The options hash to validate.
@@ -2528,18 +2527,17 @@ module Google
           keys = opts.keys
 
           valid_keys = Set.new(%i[
-            strong timestamp read_timestamp staleness exact_staleness
-            bounded_timestamp min_read_timestamp bounded_staleness max_staleness
-          ]).freeze
+                                 strong timestamp read_timestamp staleness exact_staleness
+                                 bounded_timestamp min_read_timestamp bounded_staleness max_staleness
+                               ]).freeze
 
           # Raise an error unless there is exactly one key and it's in the valid set.
-          unless keys.length == 1 && valid_keys.include?(keys.first)
-            raise ArgumentError,
-                  "Options must contain exactly one of the following keys: " \
-                  "#{valid_keys.to_a.join(', ')}"
-          end
+          return if keys.length == 1 && valid_keys.include?(keys.first)
+          raise ArgumentError,
+                "Options must contain exactly one of the following keys: " \
+                "#{valid_keys.to_a.join ', '}"
         end
-        
+
         # Creates a selector for a single-use, read-only transaction.
         #
         # @param opts [::Hash] Options for creating the transaction selector.

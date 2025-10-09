@@ -59,7 +59,7 @@ module Google
           @service = service
         end
 
-        
+
         # The `V1::ResultSetMetadata` protobuf object from the first
         # PartialResultSet.
         # @private
@@ -102,7 +102,7 @@ module Google
         # @private
         # @return [::Google::Cloud::Spanner::V1::Transaction, nil]
         def transaction
-         @metadata&.transaction
+          @metadata&.transaction
         end
 
         # rubocop:disable all
