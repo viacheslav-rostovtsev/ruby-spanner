@@ -45,26 +45,40 @@ module Google
       #   end
       #
       class Results
-        # Creates a new Results instance.
-        # @param metadata [::Google::Cloud::Spanner::V1::ResultSetMetadata] ParialResultSet metadata object
-        # @param stats [::Google::Cloud::Spanner::V1::ResultSetStats] Query plan and execution statistics
-        #   for the statement that produced this streaming result set.
-        # @param partial_result_sets [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
-        # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
-        # @private
-        def initialize metadata, stats, partial_result_sets, service
-          @metadata = metadata
-          @stats = stats
-          @partial_result_sets = partial_result_sets
-          @service = service
-        end
-
-
         # The `V1::ResultSetMetadata` protobuf object from the first
         # PartialResultSet.
         # @private
         # @return [::Google::Cloud::Spanner::V1::ResultSetMetadata]
         attr_reader :metadata
+
+        # Creates a new Results instance.
+        # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
+        # @param partial_result_sets [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
+        #   Raw enumerable from grpc `StreamingRead` call.
+        # @param session_name [::String] Required. 
+        #   The name of the session for the operation that created these Results.
+        #   Values are of the form:
+        #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
+        # @param metadata [::Google::Cloud::Spanner::V1::ResultSetMetadata] ParialResultSet metadata object
+        # @param stats [::Google::Cloud::Spanner::V1::ResultSetStats] Query plan and execution statistics
+        #   for the statement that produced this streaming result set.
+        # @param precommit_token [::Google::Cloud::Spanner::V1::MultiplexedSessionPrecommitToken, nil] Optional.
+        #   The precommit token if the Results were produced by an RW transaction on a multiplexed session.
+        #   A passthrough parameter that that transaction will need to supply in order to Commit.
+        # @private
+        def initialize service, partial_result_sets, session_name, metadata, stats, precommit_token: nil
+          @service = service
+          @partial_result_sets = partial_result_sets
+          @session_name = session_name
+          @metadata = metadata
+          @stats = stats
+
+          # The precommit token if the Results were produced by an RW transaction on a multiplexed session.
+          # A passthrough parameter that that transaction will need to supply in order to Commit.
+          # There can be multiple precommit tokens in the stream; this is the one returned with the first
+          # (peeked) element of the raw enumerable.
+          @current_precommit_token = precommit_token
+        end
 
         ##
         # The read timestamp chosen for single-use snapshots (read-only
@@ -157,10 +171,19 @@ module Google
                 should_retry_request = false
               end
 
+              # @type [::Google::Cloud::Spanner::V1::PartialResultsSet]
               grpc = @partial_result_sets.next
+
               # metadata should be set before the first iteration...
               @metadata ||= grpc.metadata
               @stats ||= grpc.stats
+
+              # The precommit token should be issued only on first and last stream element.
+              # These two precommit tokens can be different.
+              # If these Results are created in the context of a `Spanner::Transaction`,
+              # that `Transaction` object is the one keeping track of the precommit token and should be notified.
+              # Now since
+              @current_precommit_token = grpc.precommit_token if grpc.precommit_token
 
               buffered_responses << grpc
 
@@ -263,13 +286,13 @@ module Google
         def resume_request resume_token
           if @execute_query_options
             @service.execute_streaming_sql(
-              @session_path,
+              @session_name,
               @sql,
               **@execute_query_options.merge(resume_token: resume_token)
             )
           else
             @service.streaming_read_table(
-              @session_path,
+              @session_name,
               @table,
               @columns,
               **@read_options.merge(resume_token: resume_token)
@@ -282,9 +305,9 @@ module Google
         # Retries a request, by re-executing it from scratch.
         def retry_request
           if @execute_query_options
-            @service.execute_streaming_sql @session_path, @sql, **@execute_query_options
+            @service.execute_streaming_sql @session_name, @sql, **@execute_query_options
           else
-            @service.streaming_read_table @session_path, @table, @columns, **@read_options
+            @service.streaming_read_table @session_name, @table, @columns, **@read_options
           end
         end
 
@@ -316,18 +339,21 @@ module Google
         end
 
         # Creates a `Spanner::Results` for a given `PartialResultSet` grpc stream.
-        # @param enum [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
+        # @param partial_result_sets [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
         #   Raw enumerable from underlying grpc call.
         # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
+         # @param session_name [::String] Required. 
+        #   The name of the session for the operation that created these Results.
+        #   Values are of the form:
+        #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
         # @private
         # @return [::Google::Cloud::Spanner::Results]
-        def self.from_partial_result_sets partial_result_sets, service
+        def self.from_partial_result_sets partial_result_sets, service, session_name
           # @type [::Google::Cloud::Spanner::V1::PartialResultSet]
-          grpc = partial_result_sets.peek
-          metadata = grpc.metadata
-          stats = grpc.stats
-
-          new metadata, stats, partial_result_sets, service
+          partial_result_set = partial_result_sets.peek
+          metadata = partial_result_set.metadata
+          stats = partial_result_set.stats
+          new service, partial_result_sets, session_name, metadata, stats
         rescue GRPC::BadStatus => e
           raise Google::Cloud::Error.from_error(e)
         end
@@ -336,7 +362,10 @@ module Google
         # @param response [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
         #   Raw enumerable from grpc `ExecuteStreamingSql` call.
         # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
-        # @param session_path [::String] Full name of the session.
+        # @param session_name [::String] Required. 
+        #   The name of the session for the operation that created these Results.
+        #   Values are of the form:
+        #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
         # @param sql [::String] The SQL query string that was executed.
         # @param execute_query_options [::Hash] Full request options
         #   that were sent to the `service.execute_streaming_sql`. This hash joins params needed to
@@ -344,9 +373,8 @@ module Google
         #   with params specific to `execute_streaming_sql`, such as `seqno`.
         # @private
         # @return [::Google::Cloud::Spanner::Results]
-        def self.from_execute_query_response response, service, session_path, sql, execute_query_options
-          from_partial_result_sets(response, service).tap do |results|
-            results.instance_variable_set :@session_path, session_path
+        def self.from_execute_query_response response, service, session_name, sql, execute_query_options
+          from_partial_result_sets(response, service, session_name).tap do |results|
             results.instance_variable_set :@sql, sql
             results.instance_variable_set :@execute_query_options, execute_query_options
           end
@@ -356,7 +384,10 @@ module Google
         # @param response [::Enumerable<::Google::Cloud::Spanner::V1::PartialResultSet>]
         #   Raw enumerable from grpc `StreamingRead` call.
         # @param service [::Google::Cloud::Spanner::Service] The `Spanner::Service` reference.
-        # @param session_path [::String] Full name of the session.
+        # @param session_name [::String] Required. 
+        #   The name of the session for the operation that created these Results.
+        #   Values are of the form:
+        #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
         # @param table [::String] The name of the table in the database that was read by `StreamingRead` request.
         # @param columns [::Array<String, Symbol>] The columns of table that were returned
         #   by the `StreamingRead` request.
@@ -366,9 +397,8 @@ module Google
         #   with params specific to `streaming_read_table`, such as `keys`.
         # @private
         # @return [::Google::Cloud::Spanner::Results]
-        def self.from_read_response response, service, session_path, table, columns, read_options
-          from_partial_result_sets(response, service).tap do |results|
-            results.instance_variable_set :@session_path, session_path
+        def self.from_read_response response, service, session_name, table, columns, read_options
+          from_partial_result_sets(response, service, session_name).tap do |results|
             results.instance_variable_set :@table, table
             results.instance_variable_set :@columns, columns
             results.instance_variable_set :@read_options, read_options

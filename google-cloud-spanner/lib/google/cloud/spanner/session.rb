@@ -59,7 +59,7 @@ module Google
         # @return [::Hash, nil]
         attr_accessor :query_options
 
-        # Creates a new Session instance.
+        # Creates a new `Spanner::Session` instance.
         # @param grpc [::Google::Cloud::Spanner::V1::Session] Underlying `V1::Session` object.
         # @param service [::Google::Cloud::Spanner::Service] A `Spanner::Service` object.
         # @param query_options [::Hash, nil] Optional. A hash of values to specify the custom
@@ -429,8 +429,8 @@ module Google
         #   number of rows that were modified for each successful statement
         #   before the error.
         #
-        # @return [Array<Integer>] A list with the exact number of rows that
-        #   were modified for each DML statement.
+        # @return [::Google::Cloud::Spanner::V1::ExecuteBatchDmlResponse] 
+        #   An unwrapped result of the service call -- a `V1::ExecuteBatchDmlResponse` object.
         #
         def batch_update transaction, seqno, request_options: nil,
                          call_options: nil
@@ -1452,7 +1452,7 @@ module Google
           @created_time + duration_sec > Process.clock_gettime(Process::CLOCK_MONOTONIC)
         end
 
-        # Creates a new Session instance from a `V1::Session`.
+        # Creates a new `Spanner::Session` instance from a `V1::Session` object.
         # @param grpc [::Google::Cloud::Spanner::V1::Session] Underlying `V1::Session` object.
         # @param service [::Google::Cloud::Spanner::Service] A `Spanner::Service` ref.
         # @param query_options [::Hash, nil] Optional. A hash of values to specify the custom

@@ -587,14 +587,24 @@ module Google
           service.rollback request, opts
         end
 
-        # Begins a new transaction. This step can often be skipped:
+        # Explicitly begins a new transaction, making a `BeginTransaction` rpc call,
+        # and creating and returning a `V1::Transaction` object.
+        #
+        # Explicit transaction creation can often be skipped:
         # {::Google::Cloud::Spanner::V1::Spanner::Client#read Read},
         # {::Google::Cloud::Spanner::V1::Spanner::Client#execute_sql ExecuteSql} and
-        # {::Google::Cloud::Spanner::V1::Spanner::Client#commit Commit} can begin a new transaction as a
-        # side-effect.
+        # {::Google::Cloud::Spanner::V1::Spanner::Client#execute_batch_dml ExecuteBatchDml}
+        # can begin a new transaction as part of the request (so-called inline-begin).
+        # The inline-begin functionality is used in methods on `Spanner::Transaction` class,
+        # e.g. `Spanner::Transaction#read`, accessible to the end-users via the `Spanner::Client#transaction` method.
+        # 
+        # All the above methods, and  {::Google::Cloud::Spanner::V1::Spanner::Client#commit Commit}
+        # can utilize single-use transactions that do not require an explicit BeginTransaction call.
+        # Single-use transactions are used by the methods on `Spanner::Client` class,
+        # e.g. `Spanner::Client#read`, with the exception of `Spanner::Client#transaction`.
         #
         # @param session_name [::String]
-        #   Required. The session in which the transaction to be committed is running.
+        #   Required. The session in which the transaction is to be created.
         #   Values are of the form:
         #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
         # @param exclude_txn_from_change_streams [::Boolean] Optional. Defaults to `false`.
@@ -658,7 +668,7 @@ module Google
         # as well.
         # Created transactions will include the  the read timestamp chosen for the transaction.
         # @param session_name [::String] Required.
-        #   The session in which the transaction to be committed is running.
+        #   Required. The session in which the snapshot transaction is to be created..
         #   Values are of the form:
         #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
         # @param strong [::Boolean, nil] Optional.
@@ -844,7 +854,7 @@ module Google
         # Creates new `Gapic::CallOptions` from typical parameters for Spanner RPC calls.
         #
         # @param session_name [::String, nil] Optional.
-        #   The session in which the transaction to be committed is running. The value will be
+        #   The session name. Used to extract the routing header. The value will be
         #   used to send the old `google-cloud-resource-prefix` routing header.
         #   Expected values are of the form:
         #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
