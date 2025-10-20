@@ -164,7 +164,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector, seqno: 1, options: default_options
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: [], transaction_id: transaction_id,
-      single_use_transaction: nil, request_options: nil
+      single_use_transaction: nil, request_options: nil, precommit_token: nil
     }, default_options]
 
     results = nil
@@ -204,7 +204,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       mutations: mutations, 
       transaction_id: transaction_id, 
       single_use_transaction: nil,
-      request_options: nil
+      request_options: nil,
+      precommit_token: nil
     }, default_options]
 
     spanner.service.mocked_service = mock
@@ -241,7 +242,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -278,7 +279,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -315,7 +316,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -352,7 +353,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -392,7 +393,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -430,7 +431,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -470,7 +471,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -506,7 +507,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -542,7 +543,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -610,7 +611,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -646,7 +647,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector, seqno: 1, options: default_options
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: [], transaction_id: transaction_id,
-      single_use_transaction: nil, request_options: nil
+      single_use_transaction: nil, request_options: nil, precommit_token: nil
     }, expect_options]
 
     results = nil
@@ -684,7 +685,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
         session: session_grpc.name, 
         mutations: mutations, 
         transaction_id: transaction_id, 
-        single_use_transaction: nil,
+      single_use_transaction: nil, precommit_token: nil,
         request_options: request_options
       }, default_options]
       spanner.service.mocked_service = mock
@@ -710,7 +711,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector, seqno: 1, request_options: request_options, options: default_options
       mock.expect :commit, commit_resp, [{
         session: session_grpc.name, mutations: [], transaction_id: transaction_id,
-        single_use_transaction: nil, request_options: nil
+      single_use_transaction: nil, request_options: nil, precommit_token: nil
       }, default_options]
 
       timestamp = client.transaction do |tx|
@@ -749,7 +750,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
 
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: transaction_id,
-      single_use_transaction: nil, request_options: { transaction_tag: "Tag-1" }
+      single_use_transaction: nil, request_options: { transaction_tag: "Tag-1" }, precommit_token: nil
     }, default_options]
 
 

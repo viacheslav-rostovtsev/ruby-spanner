@@ -59,7 +59,7 @@ module Google
         # @return [::Hash, nil]
         attr_accessor :query_options
 
-        # Creates a new Session instance.
+        # Creates a new `Spanner::Session` instance.
         # @param grpc [::Google::Cloud::Spanner::V1::Session] Underlying `V1::Session` object.
         # @param service [::Google::Cloud::Spanner::Service] A `Spanner::Service` object.
         # @param query_options [::Hash, nil] Optional. A hash of values to specify the custom
@@ -217,6 +217,9 @@ module Google
         #     * `:retry_codes` (`Array<String>`) - The error codes that should
         #       trigger a retry.
         #
+        # @param precommit_token_notify [::Proc, nil] Optional.
+        #   The notification function for the precommit token.
+        #
         # @return [Google::Cloud::Spanner::Results] The results of the query
         #   execution.
         #
@@ -358,7 +361,8 @@ module Google
         def execute_query sql, params: nil, types: nil, transaction: nil,
                           partition_token: nil, seqno: nil, query_options: nil,
                           request_options: nil, call_options: nil, data_boost_enabled: nil,
-                          directed_read_options: nil, route_to_leader: nil
+                          directed_read_options: nil, route_to_leader: nil,
+                          precommit_token_notify: nil
           ensure_service!
           query_options = merge_if_present query_options, @query_options
 
@@ -374,7 +378,8 @@ module Google
 
           response = service.execute_streaming_sql path, sql, **execute_query_options
 
-          results = Results.from_execute_query_response response, service, path, sql, execute_query_options
+          results = Results.from_execute_query_response response, service, path, sql, execute_query_options,
+                                                        precommit_token_notify: precommit_token_notify
           @last_updated_at = Process.clock_gettime Process::CLOCK_MONOTONIC
           results
         end
@@ -429,8 +434,8 @@ module Google
         #   number of rows that were modified for each successful statement
         #   before the error.
         #
-        # @return [Array<Integer>] A list with the exact number of rows that
-        #   were modified for each DML statement.
+        # @return [::Google::Cloud::Spanner::V1::ExecuteBatchDmlResponse]
+        #   An unwrapped result of the service call -- a `V1::ExecuteBatchDmlResponse` object.
         #
         def batch_update transaction, seqno, request_options: nil,
                          call_options: nil
@@ -507,6 +512,9 @@ module Google
         #   To see the available options refer to
         #   ['Google::Cloud::Spanner::V1::ReadRequest::LockHint'](https://cloud.google.com/ruby/docs/reference/google-cloud-spanner-v1/latest/Google-Cloud-Spanner-V1-ReadRequest-LockHint)
         #
+        # @param precommit_token_notify [::Proc, nil] Optional.
+        #   The notification function for the precommit token.
+        #
         # @return [Google::Cloud::Spanner::Results] The results of the read
         #   operation.
         #
@@ -526,7 +534,7 @@ module Google
         def read table, columns, keys: nil, index: nil, limit: nil,
                  transaction: nil, partition_token: nil, request_options: nil,
                  call_options: nil, data_boost_enabled: nil, directed_read_options: nil,
-                 route_to_leader: nil, order_by: nil, lock_hint: nil
+                 route_to_leader: nil, order_by: nil, lock_hint: nil, precommit_token_notify: nil
           ensure_service!
 
           read_options = {
@@ -545,7 +553,8 @@ module Google
           response = service.streaming_read_table \
             path, table, columns, **read_options
 
-          results = Results.from_read_response response, service, path, table, columns, read_options
+          results = Results.from_read_response response, service, path, table, columns, read_options,
+                                               precommit_token_notify: precommit_token_notify
 
           @last_updated_at = Process.clock_gettime Process::CLOCK_MONOTONIC
 
@@ -1452,7 +1461,7 @@ module Google
           @created_time + duration_sec > Process.clock_gettime(Process::CLOCK_MONOTONIC)
         end
 
-        # Creates a new Session instance from a `V1::Session`.
+        # Creates a new `Spanner::Session` instance from a `V1::Session` object.
         # @param grpc [::Google::Cloud::Spanner::V1::Session] Underlying `V1::Session` object.
         # @param service [::Google::Cloud::Spanner::Service] A `Spanner::Service` ref.
         # @param query_options [::Hash, nil] Optional. A hash of values to specify the custom

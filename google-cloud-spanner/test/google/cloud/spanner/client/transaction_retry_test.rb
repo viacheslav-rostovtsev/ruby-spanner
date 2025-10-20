@@ -423,7 +423,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :retry, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
       session: session_grpc.name, 
       options: tx_opts, 
-      request_options: nil
+      request_options: nil,
     }, default_options]
 
 

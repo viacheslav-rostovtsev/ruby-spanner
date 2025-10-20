@@ -530,11 +530,15 @@ module Google
         #   Example option: `:priority`.
         # @param call_options [::Hash, nil] Optional. A hash of values to specify the custom
         #   call options. Example option `:timeout`.
+        # @param precommit_token [::Google::Cloud::Spanner::V1::MultiplexedSessionPrecommitToken, nil] Optional.
+        #    If the read-write transaction was executed on a multiplexed session, then a precommit token
+        #    with the highest sequence number received in this transaction attempt must be included.
         # @private
         # @return [::Google::Cloud::Spanner::V1::CommitResponse]
         def commit session_name, mutations = [],
                    transaction_id: nil, exclude_txn_from_change_streams: false,
-                   commit_options: nil, request_options: nil, call_options: nil
+                   commit_options: nil, request_options: nil, call_options: nil,
+                   precommit_token: nil
           route_to_leader = LARHeaders.commit
           tx_opts = nil
           if transaction_id.nil?
@@ -549,7 +553,7 @@ module Google
           request = {
             session: session_name, transaction_id: transaction_id,
             single_use_transaction: tx_opts, mutations: mutations,
-            request_options: request_options
+            request_options: request_options, precommit_token: precommit_token
           }
 
           request = add_commit_options request, commit_options
@@ -668,7 +672,7 @@ module Google
         # as well.
         # Created transactions will include the  the read timestamp chosen for the transaction.
         # @param session_name [::String] Required.
-        #   The session in which the transaction to be committed is running.
+        #   Required. The session in which the snapshot transaction is to be created..
         #   Values are of the form:
         #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
         # @param strong [::Boolean, nil] Optional.
@@ -851,6 +855,21 @@ module Google
           value << " gccl"
         end
 
+        # Creates new `Gapic::CallOptions` from typical parameters for Spanner RPC calls.
+        #
+        # @param session_name [::String, nil] Optional.
+        #   The session name. Used to extract the routing header. The value will be
+        #   used to send the old `google-cloud-resource-prefix` routing header.
+        #   Expected values are of the form:
+        #   `projects/<project_id>/instances/<instance_id>/databases/<database_id>/sessions/<session_id>`.
+        #   If nil is specified nothing will be sent.
+        # @param call_options [::Hash, nil] Optional. A hash of values to specify the custom
+        #   call options. Example option `:timeout`.
+        # @param route_to_leader [::String, nil] Optional. The value to be sent
+        #   as `x-goog-spanner-route-to-leader` header for leader aware routing.
+        #   Expected values: `"true"` or `"false"`. If nil is specified nothing will be sent.
+        # @private
+        # @return [::Gapic::CallOptions]
         def default_options session_name: nil, call_options: nil, route_to_leader: nil
           opts = {}
           metadata = {}

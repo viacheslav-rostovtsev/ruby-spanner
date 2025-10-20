@@ -116,7 +116,8 @@ describe Google::Cloud::Spanner::Service, :mock_spanner  do
           exclude_txn_from_change_streams: true
         ),
         mutations: [],
-        request_options: nil
+        request_options: nil,
+        precommit_token: nil,
       }
       expected_result = Object.new
       mocked_service.expect :commit, expected_result, [expected_request, expected_call_opts]
