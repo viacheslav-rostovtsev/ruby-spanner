@@ -2147,13 +2147,17 @@ module Google
               yield tx
 
               unless tx.existing_transaction?
-                # This can happen if the yielded `tx` object was only used to add mutations.
+                # This typically will happen if the yielded `tx` object was only used to add mutations.
                 # Then it never called any RPCs and didn't create a server-side Transaction object.
                 # In which case we should make an explicit BeginTransaction call here.
+
+                mutation_key = tx.mutations[0] if tx.mutations.length.positive?
+
                 tx.safe_begin_transaction!(
                   exclude_from_change_streams: exclude_txn_from_change_streams,
                   request_options: request_options,
-                  call_options: call_options
+                  call_options: call_options,
+                  mutation_key: mutation_key
                 )
               end
 

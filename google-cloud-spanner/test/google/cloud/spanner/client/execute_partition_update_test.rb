@@ -49,7 +49,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET active = true", transaction: tx_selector, options: default_options
 
@@ -63,7 +63,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with bool param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET active = @active", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "active" => Google::Protobuf::Value.new(bool_value: true) }), param_types: { "active" => Google::Cloud::Spanner::V1::Type.new(code: :BOOL) }, options: default_options
 
@@ -77,7 +77,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with int param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET age = @age", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "age" => Google::Protobuf::Value.new(string_value: "29") }), param_types: { "age" => Google::Cloud::Spanner::V1::Type.new(code: :INT64) }, options: default_options
 
@@ -91,7 +91,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with float param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET score = @score", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "score" => Google::Protobuf::Value.new(number_value: 0.9) }), param_types: { "score" => Google::Cloud::Spanner::V1::Type.new(code: :FLOAT64) }, options: default_options
 
@@ -107,7 +107,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
 
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET updated_at = @updated_at", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "updated_at" => Google::Protobuf::Value.new(string_value: "2017-01-02T03:04:05.060000000Z") }), param_types: { "updated_at" => Google::Cloud::Spanner::V1::Type.new(code: :TIMESTAMP) }, options: default_options
 
@@ -123,7 +123,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
 
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET birthday = @birthday", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "birthday" => Google::Protobuf::Value.new(string_value: "2017-01-02") }), param_types: { "birthday" => Google::Cloud::Spanner::V1::Type.new(code: :DATE) }, options: default_options
 
@@ -137,7 +137,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with String param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET name = @name", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "name" => Google::Protobuf::Value.new(string_value: "Charlie") }), param_types: { "name" => Google::Cloud::Spanner::V1::Type.new(code: :STRING) }, options: default_options
 
@@ -153,7 +153,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
 
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET avatar = @avatar", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "avatar" => Google::Protobuf::Value.new(string_value: Base64.strict_encode64("contents")) }), param_types: { "avatar" => Google::Cloud::Spanner::V1::Type.new(code: :BYTES) }, options: default_options
 
@@ -167,7 +167,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with an Array param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET project_ids = @list", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "list" => Google::Protobuf::Value.new(list_value: Google::Protobuf::ListValue.new(values: [Google::Protobuf::Value.new(string_value: "1"), Google::Protobuf::Value.new(string_value: "2"), Google::Protobuf::Value.new(string_value: "3")])) }), param_types: { "list" => Google::Cloud::Spanner::V1::Type.new(code: :ARRAY, array_element_type: Google::Cloud::Spanner::V1::Type.new(code: :INT64)) }, options: default_options
 
@@ -181,7 +181,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with an empty Array param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET project_ids = @list", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "list" => Google::Protobuf::Value.new(list_value: Google::Protobuf::ListValue.new(values: [])) }), param_types: { "list" => Google::Cloud::Spanner::V1::Type.new(code: :ARRAY, array_element_type: Google::Cloud::Spanner::V1::Type.new(code: :INT64)) }, options: default_options
 
@@ -195,7 +195,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with a simple Hash param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET settings = @dict", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "dict" => Google::Protobuf::Value.new(list_value: Google::Protobuf::ListValue.new(values: [Google::Protobuf::Value.new(string_value: "production")])) }), param_types: { "dict" => Google::Cloud::Spanner::V1::Type.new(code: :STRUCT, struct_type: Google::Cloud::Spanner::V1::StructType.new(fields: [Google::Cloud::Spanner::V1::StructType::Field.new(name: "env", type: Google::Cloud::Spanner::V1::Type.new(code: :STRING))])) }, options: default_options
 
@@ -209,7 +209,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with a complex Hash param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET settings = @dict", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "dict" => Google::Protobuf::Value.new(list_value: Google::Protobuf::ListValue.new(values: [Google::Protobuf::Value.new(string_value: "production"), Google::Protobuf::Value.new(number_value: 0.9), Google::Protobuf::Value.new(list_value: Google::Protobuf::ListValue.new(values: [Google::Protobuf::Value.new(string_value: "1"), Google::Protobuf::Value.new(string_value: "2"), Google::Protobuf::Value.new(string_value: "3")] )) ])) }), param_types: { "dict" => Google::Cloud::Spanner::V1::Type.new(code: :STRUCT, struct_type: Google::Cloud::Spanner::V1::StructType.new(fields: [Google::Cloud::Spanner::V1::StructType::Field.new(name: "env", type: Google::Cloud::Spanner::V1::Type.new(code: :STRING)), Google::Cloud::Spanner::V1::StructType::Field.new(name: "score", type: Google::Cloud::Spanner::V1::Type.new(code: :FLOAT64)), Google::Cloud::Spanner::V1::StructType::Field.new(name: "project_ids", type: Google::Cloud::Spanner::V1::Type.new(code: :ARRAY, array_element_type: Google::Cloud::Spanner::V1::Type.new(code: :INT64)))] )) }, options: default_options
 
@@ -223,7 +223,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with an empty Hash param" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET settings = @dict", transaction: tx_selector, params: Google::Protobuf::Struct.new(fields: { "dict" => Google::Protobuf::Value.new(list_value: Google::Protobuf::ListValue.new(values: [])) }), param_types: { "dict" => Google::Cloud::Spanner::V1::Type.new(code: :STRUCT, struct_type: Google::Cloud::Spanner::V1::StructType.new(fields: [])) }, options: default_options
 
@@ -241,7 +241,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
 
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql no_stats_results_enum, session_grpc.name, "UPDATE users SET active = true", transaction: tx_selector, options: default_options
 
@@ -256,7 +256,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
     expect_query_options = { optimizer_version: "1", optimizer_statistics_package: "auto_20191128_14_47_22UTC" }
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET active = true", transaction: tx_selector, options: default_options, query_options: expect_query_options
 
@@ -272,7 +272,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
     new_client = spanner.client instance_id, database_id, query_options: expect_query_options
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET active = true", transaction: tx_selector, options: default_options, query_options: expect_query_options
 
@@ -288,7 +288,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
     new_client = spanner.client instance_id, database_id, query_options: { optimizer_version: "1", optimizer_statistics_package: "auto_20191128_14_47_22UTC" }
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET active = true", transaction: tx_selector, options: default_options, query_options: expect_query_options
 
@@ -312,7 +312,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
 
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET active = true", transaction: tx_selector, options: expect_options
 
@@ -327,7 +327,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
     it "execute a PDML statement" do
       mock = Minitest::Mock.new
       mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-      mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts }, default_options]
+      mock.expect :begin_transaction, transaction_grpc, [{ session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
       spanner.service.mocked_service = mock
       expect_execute_streaming_sql results_enum, session_grpc.name,
                                    "UPDATE users SET active = true",
@@ -347,7 +347,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement with request tag" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{session: session_grpc.name, options: pdml_tx_opts }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{session: session_grpc.name, options: pdml_tx_opts, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET active = true",
                                  transaction: tx_selector, request_options: { request_tag: "Tag-2" },
@@ -363,7 +363,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
   it "can execute a PDML statement while excluding from change streams" do
     mock = Minitest::Mock.new
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
-    mock.expect :begin_transaction, transaction_grpc, [{session: session_grpc.name, options: pdml_tx_opts_with_change_stream_exclusion }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{session: session_grpc.name, options: pdml_tx_opts_with_change_stream_exclusion, mutation_key: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "UPDATE users SET active = true", transaction: tx_selector, options: default_options
 

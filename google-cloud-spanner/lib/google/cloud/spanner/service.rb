@@ -621,13 +621,18 @@ module Google
         # @param route_to_leader [::String, nil] Optional. The value to be sent
         #   as `x-goog-spanner-route-to-leader` header for leader aware routing.
         #   Expected values: `"true"` or `"false"`.
+        # @param mutation_key [::Google::Cloud::Spanner::V1::Mutation, nil] Optional.
+        #   If a read-write transaction on a multiplexed session commit mutations
+        #   without performing any reads or queries, one of the mutations from the mutation set
+        #   must be sent as a mutation key for `BeginTransaction`.
         # @private
         # @return [::Google::Cloud::Spanner::V1::Transaction]
         def begin_transaction session_name,
                               exclude_txn_from_change_streams: false,
                               request_options: nil,
                               call_options: nil,
-                              route_to_leader: nil
+                              route_to_leader: nil,
+                              mutation_key: nil
           tx_opts = V1::TransactionOptions.new(
             read_write: V1::TransactionOptions::ReadWrite.new,
             exclude_txn_from_change_streams: exclude_txn_from_change_streams
@@ -638,7 +643,8 @@ module Google
           request = {
             session: session_name,
             options: tx_opts,
-            request_options: request_options
+            request_options: request_options,
+            mutation_key: mutation_key
           }
           service.begin_transaction request, opts
         end
@@ -697,7 +703,7 @@ module Google
           )
           opts = default_options session_name: session_name,
                                  call_options: call_options
-          request = { session: session_name, options: tx_opts }
+          request = { session: session_name, options: tx_opts, mutation_key: nil }
           service.begin_transaction request, opts
         end
 
@@ -712,7 +718,7 @@ module Google
           opts = default_options session_name: session_name,
                                  call_options: call_options,
                                  route_to_leader: route_to_leader
-          request = { session: session_name, options: tx_opts }
+          request = { session: session_name, options: tx_opts, mutation_key: nil }
           service.begin_transaction request, opts
         end
 

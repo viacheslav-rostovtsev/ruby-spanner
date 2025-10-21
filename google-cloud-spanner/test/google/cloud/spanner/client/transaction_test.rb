@@ -196,7 +196,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -235,7 +236,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -272,7 +274,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -309,7 +312,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -346,7 +350,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -386,7 +391,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -424,14 +430,16 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, 
       mutations: mutations, 
       transaction_id: transaction_id, 
-      single_use_transaction: nil, precommit_token: nil,
+      single_use_transaction: nil,
+      precommit_token: nil,
       request_options: nil
     }, default_options]
     spanner.service.mocked_service = mock
@@ -464,7 +472,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -500,7 +509,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -536,7 +546,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name,
         options: tx_opts_exclude, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -604,7 +615,8 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.expect :begin_transaction, transaction_grpc, [{
         session: session_grpc.name, 
         options: tx_opts, 
-        request_options: nil
+        request_options: nil,
+        mutation_key: mutations[0]
       }, default_options]
 
     mock.expect :commit, commit_resp, [{
@@ -678,14 +690,16 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       mock.expect :begin_transaction, transaction_grpc, [{
           session: session_grpc.name, 
           options: tx_opts, 
-          request_options: request_options
+          request_options: request_options,
+          mutation_key: mutations[0]
         }, default_options]
 
       mock.expect :commit, commit_resp, [{
         session: session_grpc.name, 
         mutations: mutations, 
         transaction_id: transaction_id, 
-      single_use_transaction: nil, precommit_token: nil,
+        single_use_transaction: nil,
+        precommit_token: nil,
         request_options: request_options
       }, default_options]
       spanner.service.mocked_service = mock
@@ -723,6 +737,81 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
 
       mock.verify
     end
+  end
+
+  it "will use a precommit token from Transaction if there is only BeginTransacton request" do
+    # This test "describes" an undesirable behavior that is being kept for backward compatibility
+    # `Spanner::Transaction#transaction_id` will call BeginTransaction if there is no active server-side `V1::Transaction`
+    # associated with that `Spanner::Transaction` object.
+    # Please note that the BeginTransaction does not supply a mutation key (because `transaction_id` does not have any idea of it).
+
+    mutations = [
+      Google::Cloud::Spanner::V1::Mutation.new(
+        update: Google::Cloud::Spanner::V1::Mutation::Write.new(
+          table: "users", columns: %w(id name active),
+          values: [Google::Cloud::Spanner::Convert.object_to_grpc_value([1, "Charlie", false]).list_value]
+        )
+      )
+    ]
+
+    mock = Minitest::Mock.new
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{
+        session: session_grpc.name, 
+        options: tx_opts, 
+        request_options: nil,
+        mutation_key: nil
+      }, default_options]
+
+    mock.expect :commit, commit_resp, [{
+      session: session_grpc.name, 
+      mutations: mutations, 
+      transaction_id: transaction_id, 
+      single_use_transaction: nil,
+      request_options: nil,
+      precommit_token: nil
+    }, default_options]
+
+    spanner.service.mocked_service = mock
+
+    timestamp = client.transaction do |tx|
+      id = tx.transaction_id # unfortunately transaction_id is not side-effect free and will call BeginTransaction if there is no one already
+      tx.update "users", [{ id: 1, name: "Charlie", active: false }]
+    end
+    _(timestamp).must_equal commit_time
+
+    shutdown_client! client
+
+    mock.verify
+  end
+
+  it "will do an empty commit when the end-user does not do anything with the yielded transaction" do
+    mock = Minitest::Mock.new
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: default_session_request }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{
+        session: session_grpc.name, 
+        options: tx_opts, 
+        request_options: nil,
+        mutation_key: nil
+      }, default_options]
+
+    mock.expect :commit, commit_resp, [{
+      session: session_grpc.name, 
+      mutations: [], 
+      transaction_id: transaction_id, 
+      single_use_transaction: nil,
+      request_options: nil,
+      precommit_token: nil
+    }, default_options]
+
+    spanner.service.mocked_service = mock
+
+    timestamp = client.transaction do |tx|
+    end
+
+    shutdown_client! client
+
+    mock.verify
   end
 
   it "can execute a trasaction with transaction and request tag" do

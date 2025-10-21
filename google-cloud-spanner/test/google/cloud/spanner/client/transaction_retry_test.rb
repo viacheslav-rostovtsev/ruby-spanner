@@ -89,7 +89,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :retry, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_begin, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
@@ -141,7 +141,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :retry, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_begin, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
@@ -191,7 +191,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :retry, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_begin, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
@@ -241,12 +241,12 @@ describe Google::Cloud::Spanner::Client, :transaction, :retry, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_begin, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
@@ -301,22 +301,22 @@ describe Google::Cloud::Spanner::Client, :transaction, :retry, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_begin, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
@@ -373,7 +373,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :retry, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_begin, seqno: 1, options: default_options
 
     mock.expect :begin_transaction, transaction_grpc, [{
-      session: session_grpc.name, options: tx_opts, request_options: nil
+      session: session_grpc.name, options: tx_opts, request_options: nil, mutation_key: nil
     }, default_options]
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users", transaction: tx_selector_id, seqno: 1, options: default_options
 
@@ -424,6 +424,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :retry, :mock_spanner do
       session: session_grpc.name, 
       options: tx_opts, 
       request_options: nil,
+      mutation_key: nil
     }, default_options]
 
 
