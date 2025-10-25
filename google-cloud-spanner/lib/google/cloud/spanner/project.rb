@@ -501,6 +501,8 @@ module Google
           Database::Job.from_grpc grpc, service
         end
 
+        # rubocop:disable Lint/UnusedMethodArgument
+
         ##
         # Creates a Cloud Spanner client. A client is used to read and/or modify
         # data in a Cloud Spanner database.
@@ -510,31 +512,8 @@ module Google
         # @param [String] database_id The unique identifier for the database.
         #   Required.
         # @param [Hash] pool Optional. Defaults to `{}`. Deprecated.
-        #   @deprecated This parameter will become non-functional and will be removed in the
-        #   future releases.
-        #
-        #   Settings to control how and when sessions are managed by the client.
-        #   If this parameter is `{}` or `nil` the client will use Multiplexed sessions.
-        #   Otherwise the legacy session pool will be created with options provided and
-        #   the client will use non-Multiplexed sessions.
-        #   The following settings can be provided:
-        #
-        #   * `:min` (Integer) Minimum number of sessions that the client will
-        #     maintain at any point in time. The default is 10.
-        #   * `:max` (Integer) Maximum number of sessions that the client will
-        #     have at any point in time. The default is 100.
-        #   * `:keepalive` (Numeric) The amount of time a session can be idle
-        #     before an attempt is made to prevent the idle sessions from being
-        #     closed by the Cloud Spanner service. The default is 1800 (30
-        #     minutes).
-        #   * `:fail` (true/false) When `true` the client raises a
-        #     {SessionLimitError} when the client has allocated the `max` number
-        #     of sessions. When `false` the client blocks until a session
-        #     becomes available. The default is `true`.
-        #   * `:threads` (Integer) The number of threads in the thread pool. The
-        #     default is twice the number of available CPUs.
-        #   * `:write_ratio` (Float) Deprecated. This field is no longer needed
-        #     and will be removed in a future release.
+        #   @deprecated This parameter is non-functional since the multiplexed SessionCache does not require
+        #   pool options.
         # @param [Hash] labels The labels to be applied to all sessions
         #   created by the client. Cloud Labels are a flexible and lightweight
         #   mechanism for organizing cloud resources into groups that reflect a
@@ -611,11 +590,12 @@ module Google
           end
           Client.new self, instance_id, database_id,
                      session_labels: labels,
-                     pool_opts: valid_session_pool_options(pool),
                      query_options: query_options,
                      database_role: database_role,
                      directed_read_options: directed_read_options
         end
+
+        # rubocop:enable Lint/UnusedMethodArgument
 
         ##
         # Creates a Cloud Spanner batch client. A batch client is used to read

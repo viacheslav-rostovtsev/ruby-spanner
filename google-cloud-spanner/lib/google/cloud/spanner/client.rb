@@ -16,7 +16,6 @@
 require "google/cloud/spanner/errors"
 require "google/cloud/spanner/project"
 require "google/cloud/spanner/data"
-require "google/cloud/spanner/pool"
 require "google/cloud/spanner/session_cache"
 require "google/cloud/spanner/session_creation_options"
 require "google/cloud/spanner/session"
@@ -57,6 +56,8 @@ module Google
         # @private
         IS_TRANSACTION_RUNNING_KEY = "ruby_spanner_is_transaction_running".freeze
 
+        # rubocop:disable Lint/UnusedMethodArgument
+
         # Creates a new Spanner Client instance.
         # @param project [::Google::Cloud::Spanner::Project] A `Spanner::Project` ref.
         # @param instance_id [::String] Instance id, e.g. `"my-instance"`.
@@ -64,10 +65,8 @@ module Google
         # @param session_labels [::Hash, nil] Optional. The labels to be applied to all sessions
         #   created by the client. Example: `"team" => "billing-service"`.
         # @param pool_opts [::Hash] Optional. Defaults to `{}`. Deprecated.
-        #   This parameter will become non-functional and will be removed in the subsequent versions.
-        #   If `{}` or `nil` a SessionCache will be created and used.
-        #   Otherwise the legacy `Spanner::Pool` will be created with options provided.
-        #   Example parameter: `:keepalive`.
+        #   @deprecated This parameter is non-functional since the multiplexed SessionCache does not require
+        #   pool options.
         # @param query_options [::Hash, nil] Optional. A hash of values to specify the custom
         #   query options for executing SQL query. Example parameter `:optimizer_version`.
         # @param database_role [::String, nil] Optional. The Spanner session creator role.
@@ -96,12 +95,10 @@ module Google
             query_options: @query_options
           )
 
-          @pool = if pool_opts.nil? || pool_opts.empty?
-                    SessionCache.new @project.service, session_creation_options
-                  else
-                    Pool.new @project.service, session_creation_options, **pool_opts
-                  end
+          @pool = SessionCache.new @project.service, session_creation_options
         end
+
+        # rubocop:enable Lint/UnusedMethodArgument
 
         # The unique identifier for the project.
         # @return [String]
@@ -1962,7 +1959,8 @@ module Google
         # rubocop:disable Metrics/AbcSize
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/BlockLength
-
+        # rubocop:disable Metrics/CyclomaticComplexity
+        # rubocop:disable Metrics/PerceivedComplexity
 
         ##
         # Creates a transaction for reads and writes that execute atomically at
@@ -2181,8 +2179,12 @@ module Google
               check_and_propagate_err! e, (current_time - start_time > deadline)
               # Sleep the amount from RetryDelay, or incremental backoff
               sleep(delay_from_aborted(e) || backoff *= 1.3)
+
               # Create new transaction on the session and retry the block
-              tx = session.create_transaction exclude_txn_from_change_streams: exclude_txn_from_change_streams
+              tx = session.create_empty_transaction exclude_txn_from_change_streams: exclude_txn_from_change_streams
+              if request_options
+                tx.transaction_tag = request_options[:transaction_tag]
+              end
               retry
             rescue StandardError => e
               # Rollback transaction when handling unexpected error
@@ -2200,6 +2202,9 @@ module Google
         # rubocop:enable Metrics/AbcSize
         # rubocop:enable Metrics/MethodLength
         # rubocop:enable Metrics/BlockLength
+        # rubocop:enable Metrics/CyclomaticComplexity
+        # rubocop:enable Metrics/PerceivedComplexity
+
 
         ##
         # Creates a snapshot read-only transaction for reads that execute

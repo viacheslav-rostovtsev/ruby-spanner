@@ -50,7 +50,7 @@ class MockSpanner < Minitest::Spec
     pool = client.instance_variable_get :@pool
 
     if (pool.is_a? ::Google::Cloud::Spanner::SessionCache)
-       client.close
+      client.close
     else
       # remove all sessions so we don't have to handle the calls to session_delete
       pool.sessions_available = []

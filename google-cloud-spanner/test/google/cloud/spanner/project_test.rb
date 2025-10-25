@@ -50,15 +50,6 @@ describe Google::Cloud::Spanner::Project, :mock_spanner do
     _(client.instance_variable_get :@pool).must_be_kind_of ::Google::Cloud::Spanner::SessionCache
   end
 
-   it "creates client with legacy pool if pool options given" do
-    mock = Minitest::Mock.new
-    mock.expect :batch_create_sessions, batch_create_sessions_grpc, [Hash, ::Gapic::CallOptions]
-    spanner.service.mocked_service = mock
-
-    client = spanner.client instance_id, database_id, pool: { min: 1, max: 1 }, database_role: "test-role"
-    _(client.instance_variable_get :@pool).must_be_kind_of ::Google::Cloud::Spanner::Pool
-  end
-
   it "creates client with database role" do
     mock = Minitest::Mock.new
     spanner.service.mocked_service = mock
