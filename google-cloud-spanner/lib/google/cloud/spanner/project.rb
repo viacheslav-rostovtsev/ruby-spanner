@@ -14,9 +14,6 @@
 
 
 require "google/cloud/spanner/errors"
-require "google/cloud/spanner/service"
-require "google/cloud/spanner/client"
-require "google/cloud/spanner/batch_client"
 require "google/cloud/spanner/instance"
 require "google/cloud/spanner/database"
 require "google/cloud/spanner/range"

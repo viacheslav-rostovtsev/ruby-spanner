@@ -14,7 +14,6 @@
 
 
 require "google/cloud/spanner/errors"
-require "google/cloud/spanner/project"
 require "google/cloud/spanner/data"
 require "google/cloud/spanner/session_cache"
 require "google/cloud/spanner/session_creation_options"
