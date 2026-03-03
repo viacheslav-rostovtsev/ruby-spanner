@@ -19,7 +19,6 @@ require "google/cloud/spanner/version"
 require "google/cloud/spanner/v1"
 require "google/cloud/spanner/admin/instance/v1"
 require "google/cloud/spanner/admin/database/v1"
-require "google/cloud/spanner/convert"
 require "google/cloud/spanner/lar_headers"
 
 module Google

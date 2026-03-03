@@ -14,7 +14,10 @@
 
 
 require "google-cloud-spanner"
+require "google/cloud/spanner/batch_client"
+require "google/cloud/spanner/client"
 require "google/cloud/spanner/project"
+require "google/cloud/spanner/service"
 require "google/cloud/spanner/spanner_error"
 require "google/cloud/spanner/request_id_interceptor"
 require "google/cloud/config"
